@@ -65,22 +65,6 @@ async function run() {
       res.send(result);
     });
 
-    // Add booking
-    app.post("/bookings", async (req, res) => {
-      const booking = req.body;
-      const result = await bookingsCollection.insertOne(booking);
-      res.send(result);
-    });
-
-    // View booking
-    app.get("/bookings", async (req, res) => {
-      const email = req.query.userEmail;
-      const result = await bookingsCollection
-        .find({ userEmail: email })
-        .toArray();
-      res.send(result);
-    });
-
     // Update service
     app.put("/services/:id", async (req, res) => {
       const id = req.params.id;
@@ -112,6 +96,44 @@ async function run() {
         console.log(err);
       }
     });
+
+    // Add booking
+    app.post("/bookings", async (req, res) => {
+      const booking = req.body;
+      const result = await bookingsCollection.insertOne(booking);
+      res.send(result);
+    });
+
+    // Get all booking
+    app.get("/all-bookings", async (req, res) => {
+      const result = await bookingsCollection.find().toArray();
+      res.send(result);
+    });
+    
+    // Update booking status
+    app.patch("/all-bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const { status } = req.body;
+
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { status: status },
+      };
+
+      const result = await bookingsCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    // Get booking by email
+    app.get("/bookings", async (req, res) => {
+      const email = req.query.userEmail;
+      const result = await bookingsCollection
+        .find({ userEmail: email })
+        .toArray();
+      res.send(result);
+    });
+
+
 
     app.get("/", (req, res) => {
       res.send("Gadget aid server is running");
