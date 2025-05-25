@@ -28,6 +28,7 @@ async function run() {
 
     const db = client.db("gadgetAidDB");
     const servicesCollection = db.collection("services");
+    const bookingsCollection = db.collection("bookings");
 
     // All services
     app.get("/services", async (req, res) => {
@@ -35,7 +36,7 @@ async function run() {
       res.send(result);
     });
 
-    // User-specific ManageService
+    // Manage Service by user
     app.get("/my-services", async (req, res) => {
       const email = req.query.email;
       if (!email) {
@@ -64,6 +65,22 @@ async function run() {
       res.send(result);
     });
 
+    // Add booking
+    app.post("/bookings", async (req, res) => {
+      const booking = req.body;
+      const result = await bookingsCollection.insertOne(booking);
+      res.send(result);
+    });
+
+    // View booking
+    app.get("/bookings", async (req, res) => {
+      const email = req.query.userEmail;
+      const result = await bookingsCollection
+        .find({ userEmail: email })
+        .toArray();
+      res.send(result);
+    });
+
     // Update service
     app.put("/services/:id", async (req, res) => {
       const id = req.params.id;
@@ -80,19 +97,21 @@ async function run() {
         },
       };
       const result = await servicesCollection.updateOne(filter, updateDoc);
-      res.send(result)
-    })
+      res.send(result);
+    });
 
     //Delete service
     app.delete("/services/:id", async (req, res) => {
       const id = req.params.id;
       try {
-        const result = await servicesCollection.deleteOne({ _id: new ObjectId(id) });
+        const result = await servicesCollection.deleteOne({
+          _id: new ObjectId(id),
+        });
         res.send(result);
       } catch (err) {
         console.log(err);
       }
-    })
+    });
 
     app.get("/", (req, res) => {
       res.send("Gadget aid server is running");
